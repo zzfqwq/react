@@ -35,7 +35,7 @@ export default function App() {
         <div className="steps">
           <Steps step={step} />
           <Message step={step} messages={messages} />
-          <PreNext handlePrevious={handlePrevious} handleNext={handleNext} />
+          <Button handlePrevious={handlePrevious} handleNext={handleNext} />
         </div>
       ) : null}
     </>
@@ -60,27 +60,21 @@ function Message({ messages, step }) {
   );
 }
 
-function PreNext({ handlePrevious, handleNext }) {
+function Button({ handlePrevious, handleNext }) {
   return (
     <div className="buttons">
-      <Button bgColor="#7950f2" textColor="#fff" onClick={handlePrevious}>
-        <span>👈</span>Previous
-      </Button>
-
-      <Button bgColor="#7950f2" textColor="#fff" onClick={handleNext}>
-        <span>👉</span>Next
-      </Button>
+      <button
+        style={{ backgroundColor: "#7950f2", color: "#fff" }}
+        onClick={handlePrevious}
+      >
+        Previous
+      </button>
+      <button
+        style={{ backgroundColor: "#7950f2", color: "#fff" }}
+        onClick={handleNext}
+      >
+        Next
+      </button>
     </div>
-  );
-}
-
-function Button({ bgColor, textColor, onClick, children }) {
-  return (
-    <button
-      style={{ backgroundColor: bgColor, color: textColor }}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   );
 }
