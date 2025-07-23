@@ -36,9 +36,6 @@ export default function App() {
   const [friendName, setFriendName] = useState("");
   const [image, setImage] = useState("");
   const [selectedFriend, setSelectedFriend] = useState(null);
-  const [bill, setBill] = useState("");
-  const [paidByUser, setPaidByUser] = useState("");
-  const [whoIsPaying, setWhoIsPaying] = useState("user");
 
   function handleShowAddFriend() {
     setShowAddFriend((showAddFriend) => !showAddFriend);
@@ -65,34 +62,6 @@ export default function App() {
     setSelectedFriend(friend);
   }
 
-  function handleCountBalance(e) {
-    e.preventDefault();
-
-    const userPaid = Number(paidByUser);
-    const total = Number(bill);
-    const friendPaid = total - userPaid;
-
-    let newBalance;
-
-    if (whoIsPaying === "user") {
-      newBalance = friendPaid;
-    } else {
-      newBalance = -userPaid;
-    }
-
-    setFriend(
-      friends.map((friend) =>
-        friend.id === selectedFriend?.id
-          ? { ...friend, balance: newBalance }
-          : friend
-      )
-    );
-
-    setBill("");
-    setPaidByUser("");
-    setWhoIsPaying("user");
-  }
-
   return (
     <div className="app">
       <div className="sidebar">
@@ -117,14 +86,10 @@ export default function App() {
       </div>
       {showSplitBill && (
         <FormSplitBill
+          setFriend={setFriend}
+          friends={friends}
           selectedFriend={selectedFriend}
-          bill={bill}
-          setBill={setBill}
-          paidByUser={paidByUser}
-          setPaidByUser={setPaidByUser}
-          whoIsPaying={whoIsPaying}
-          setWhoIsPaying={setWhoIsPaying}
-          handleCountBalance={handleCountBalance}
+          key={selectedFriend.id}
         />
       )}
     </div>
@@ -211,16 +176,41 @@ function FormAddFriend({
   );
 }
 
-function FormSplitBill({
-  selectedFriend,
-  bill,
-  setBill,
-  paidByUser,
-  setPaidByUser,
-  whoIsPaying,
-  setWhoIsPaying,
-  handleCountBalance,
-}) {
+function FormSplitBill({ selectedFriend, setFriend, friends }) {
+  const [bill, setBill] = useState("");
+  const [paidByUser, setPaidByUser] = useState("");
+  const [whoIsPaying, setWhoIsPaying] = useState("user");
+
+  function handleCountBalance(e) {
+    e.preventDefault();
+
+    const userPaid = Number(paidByUser);
+    const total = Number(bill);
+    const friendPaid = total - userPaid;
+
+    let newBalance;
+
+    if (whoIsPaying === "user") {
+      newBalance = friendPaid;
+    } else {
+      newBalance = -userPaid;
+    }
+
+    setFriend(
+      friends.map((friend) =>
+        friend.id === selectedFriend?.id
+          ? { ...friend, balance: newBalance }
+          : friend
+      )
+    );
+
+    setBill("");
+    setPaidByUser("");
+    setWhoIsPaying("user");
+  }
+
+  const paidByFriend = bill ? bill - paidByUser : "";
+
   return (
     <form className="form-split-bill">
       <h2>Split a bill with {selectedFriend.name}</h2>
@@ -240,7 +230,7 @@ function FormSplitBill({
       />
 
       <label>🧑‍🤝‍🧑 {selectedFriend.name}'s expense</label>
-      <input type="text" disabled />
+      <input type="text" disabled value={paidByFriend} />
 
       <label>🤔 Who is paying the bill</label>
       <select
