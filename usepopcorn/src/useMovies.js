@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useDebounce } from "./useDebounce";
 
 export function useMovies(KEY, query) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const debouncedQuery = useDebounce(query, 500);
 
   useEffect(
     function () {
@@ -14,7 +16,7 @@ export function useMovies(KEY, query) {
           setIsLoading(true);
           setError("");
           const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            `https://www.omdbapi.com/?apikey=${KEY}&s=${debouncedQuery}`,
             { signal: controller.signal }
           );
 
@@ -36,7 +38,7 @@ export function useMovies(KEY, query) {
         }
       }
 
-      if (query.length < 3) {
+      if (debouncedQuery.length < 3) {
         setError("");
         setMovies([]);
         return;
@@ -48,7 +50,7 @@ export function useMovies(KEY, query) {
         controller.abort();
       };
     },
-    [query]
+    [debouncedQuery]
   );
   return { movies, isLoading, error };
 }

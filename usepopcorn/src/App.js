@@ -168,7 +168,8 @@ function MovieList({ movies, onSelectMovie }) {
 function Movie({ movie, onSelectMovie }) {
   return (
     <li key={movie.imdbID} onClick={() => onSelectMovie(movie.imdbID)}>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      {/* <img src={movie.Poster} alt={`${movie.Title} poster`} /> */}
+      <img src={movie.Poster} alt={`${movie.Title} poster`} loading="lazy" />
       <h3>{movie.Title}</h3>
       <div>
         <p>
@@ -245,7 +246,7 @@ function MovieDetails({
       async function getMovieDetails() {
         setIsLoading(true);
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&i=${selectId}`
+          `https://www.omdbapi.com/?apikey=${KEY}&i=${selectId}`
         );
         const data = await res.json();
         setMovie(data);
@@ -279,7 +280,8 @@ function MovieDetails({
               &larr;
             </button>
 
-            <img src={poster} alt={`Poster of ${movie}`} />
+            {/* <img src={poster} alt={`Poster of ${movie}`} /> */}
+            <img src={poster} alt={`Poster of ${title}`} loading="lazy" />
 
             <div className="details-overview">
               <h2>{title}</h2>
@@ -371,7 +373,8 @@ function WatchedMoviesList({ watched, onDeleteWatched }) {
 function WatchedMovie({ movie, onDeleteWatched }) {
   return (
     <li key={movie.imdbID}>
-      <img src={movie.poster} alt={`${movie.title} poster`} />
+      {/* <img src={movie.poster} alt={`${movie.title} poster`} /> */}
+      <img src={movie.poster} alt={`${movie.title} poster`} loading="lazy" />
       <h3>{movie.title}</h3>
       <div>
         <p>
