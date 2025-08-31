@@ -13,13 +13,15 @@ import Timer from "./Timer";
 
 const SECS_PER_QUESTION = 30;
 
+const API = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
 const initialState = {
   questions: [],
   status: "loading",
-  index: 0, //current question has been displayed
+  index: 0,
   answer: null,
   points: 0,
-  highscore: 0,
+  highscore: Number(localStorage.getItem("highscore") ?? 0),
   secondsRemaining: null,
 };
 
@@ -27,15 +29,18 @@ function reducer(state, action) {
   switch (action.type) {
     case "dataReceived":
       return { ...state, questions: action.payload, status: "ready" };
+
     case "dataFailed":
       return { ...state, status: "error" };
+
     case "start":
       return {
         ...state,
         status: "active",
         secondsRemaining: state.questions.length * SECS_PER_QUESTION,
       };
-    case "newAnswer":
+
+    case "newAnswer": {
       const question = state.questions.at(state.index);
       return {
         ...state,
@@ -45,30 +50,39 @@ function reducer(state, action) {
             ? state.points + question.points
             : state.points,
       };
+    }
+
     case "newQuestion":
       return { ...state, index: state.index + 1, answer: null };
-    case "finish":
-      return {
-        ...state,
-        status: "finished",
-        highscore:
-          state.points > state.highscore ? state.points : state.highscore,
-      };
+
+    case "finish": {
+      // 🏁 结束时更新并持久化最高分
+      const nextHigh = Math.max(state.highscore, state.points);
+      try {
+        localStorage.setItem("highscore", String(nextHigh));
+      } catch {}
+      return { ...state, status: "finished", highscore: nextHigh };
+    }
+
     case "restart":
       return {
         ...initialState,
         questions: state.questions,
         status: "ready",
       };
-    case "tick":
+
+    case "tick": {
+      // ⏱ 修复“到点”误差：按减少后的新值判断
+      const next = state.secondsRemaining - 1;
       return {
         ...state,
-        secondsRemaining: state.secondsRemaining - 1,
-        status: state.secondsRemaining === 0 ? "finished" : state.status,
+        secondsRemaining: next,
+        status: next === 0 ? "finished" : state.status,
       };
+    }
 
     default:
-      throw new Error("Action Unknow");
+      throw new Error("Action Unknown");
   }
 }
 
@@ -85,10 +99,10 @@ export default function App() {
   );
 
   useEffect(function () {
-    fetch("http://localhost:8000/questions")
+    fetch(`${API}/questions`)
       .then((res) => res.json())
       .then((data) => dispatch({ type: "dataReceived", payload: data }))
-      .catch((err) => dispatch({ type: "dataFailed" }));
+      .catch(() => dispatch({ type: "dataFailed" }));
   }, []);
 
   return (
@@ -98,9 +112,11 @@ export default function App() {
       <Main>
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
+
         {status === "ready" && (
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
+
         {status === "active" && (
           <div>
             <Progress
@@ -110,11 +126,13 @@ export default function App() {
               maxPossiblePoints={maxPossiblePoints}
               answer={answer}
             />
+
             <Question
               question={questions[index]}
               dispatch={dispatch}
               answer={answer}
             />
+
             <Footer>
               <NextQuestion
                 dispatch={dispatch}
@@ -123,11 +141,13 @@ export default function App() {
                 numQuestions={numQuestions}
               />
             </Footer>
+
             <Footer>
               <Timer dispatch={dispatch} secondsRemaining={secondsRemaining} />
             </Footer>
           </div>
         )}
+
         {status === "finished" && (
           <FinishScreen
             points={points}
