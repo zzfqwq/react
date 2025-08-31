@@ -28,7 +28,15 @@ const initialState = {
 function reducer(state, action) {
   switch (action.type) {
     case "dataReceived":
-      return { ...state, questions: action.payload, status: "ready" };
+      return {
+        ...state,
+        status: "ready",
+        questions: action.payload,
+        maxPossiblePoints: action.payload.reduce(
+          (sum, q) => sum + (Number(q.points) || 0),
+          0
+        ),
+      };
 
     case "dataFailed":
       return { ...state, status: "error" };
@@ -98,13 +106,19 @@ export default function App() {
     0
   );
 
-  useEffect(function () {
+  useEffect(() => {
     fetch("/data/questions.json")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data) => dispatch({ type: "dataReceived", payload: data }))
+      .then((data) => {
+        const qs = Array.isArray(data) ? data : data?.questions;
+        if (!Array.isArray(qs))
+          throw new Error("Invalid questions JSON: expected an array");
+
+        dispatch({ type: "dataReceived", payload: qs });
+      })
       .catch((err) => {
         console.error("Load questions failed:", err);
         dispatch({ type: "dataFailed" });
