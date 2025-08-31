@@ -99,7 +99,7 @@ export default function App() {
   );
 
   useEffect(function () {
-    fetch(`${API}/questions`)
+    fetch(`${import.meta.env.BASE_URL || "/"}data/questions.json`)
       .then((res) => res.json())
       .then((data) => dispatch({ type: "dataReceived", payload: data }))
       .catch(() => dispatch({ type: "dataFailed" }));
