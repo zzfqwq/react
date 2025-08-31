@@ -99,10 +99,16 @@ export default function App() {
   );
 
   useEffect(function () {
-    fetch(`${API}/questions`)
-      .then((res) => res.json())
+    fetch("/data/questions.json")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => dispatch({ type: "dataReceived", payload: data }))
-      .catch(() => dispatch({ type: "dataFailed" }));
+      .catch((err) => {
+        console.error("Load questions failed:", err);
+        dispatch({ type: "dataFailed" });
+      });
   }, []);
 
   return (
